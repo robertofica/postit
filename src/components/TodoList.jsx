@@ -1,9 +1,8 @@
 import React, { Fragment, useState, useRef, useEffect } from 'react'
 import { v4 as uuid } from 'uuid';
-import { TodoItem } from './TodoItem';
+import "./style.css";
 
 const KEY = "todolist-todos"
-
 
 export function TodoList(){
 
@@ -13,7 +12,6 @@ export function TodoList(){
     const descripcionRef = useRef();
     const importanciaRef = useRef();
 
-    
     useEffect(() => {
         const storedTodos = JSON.parse(localStorage.getItem(KEY));
         if (storedTodos){
@@ -25,98 +23,66 @@ export function TodoList(){
         localStorage.setItem(KEY, JSON.stringify(todos));
     }, [todos])
 
+   
     const agregarTarea = () => {
         console.log("AGREGANDO TAREA");
         const titulo = tituloRef.current.value;
         const descripcion = descripcionRef.current.value;
-        const importancia = importanciaRef.current.value;
+        const importancia = importanciaRef.current.checked;
 
-        if (titulo === '') return;
+        console.log("antes del IF");
+        console.log(titulo);
+        console.log(descripcion);
+        console.log(importancia);
+        
         if (descripcion === '') return;
-        if (importancia === '') return;
+        
+        console.log("agregando postit");
 
         setTodos((prevTodos) => {
             const newTask = {
                 id: uuid(),
                 titulo: titulo,
                 descripcion: descripcion,
-                importancia: 0
-            }
-
+                importancia:importancia,
+            };
+            console.log(newTask)
             return [...prevTodos, newTask]
         })
-
         tituloRef.current.value = null
         descripcionRef.current.value = null
-        importanciaRef.current.value = null
+        importanciaRef.current.checked = false
     }
 
    
-    const ResumenTareas = () => {
-        const cant = cantidadTareas()
-
-        
-        if (cant === 0){
-            return (
-                <div className="alert alert-success mt-3">
-                    Felicitaciones no tienes tareas pendientes! :)
-                </div>
-            )
-        }
-
-        if (cant === 1){
-            return (
-                <div className="alert alert-info mt-3">
-                    Te queda solamente una tarea pendiente!
-                </div>
-            )
-        }
-
-        return (
-            <div className="alert alert-info mt-3">
-                Te quedan {cant} tareas pendientes!
-            </div>
-        )
-    }
-
-    const cantidadTareas = () => {
-        return todos.filter((todo) => !todo.completed).length;
-    }
-
-    const cambiarEstadoTarea = (id) => {
-        console.log(id)
-        const newTodos = [...todos];
-        const todo = newTodos.find((todo) => todo.id === id)
-        todo.completed = !todo.completed;
-        setTodos(newTodos)
-    }
-
-    const eliminarTareasCompletadas = () => {
-        const newTodos = todos.filter((todo) => !todo.completed);
+    const eliminapostit= (id) => {
+        const newTodos =  todos.filter((todo) => todo.id !== id);
         setTodos(newTodos);
-    }
+      }
 
     return (
-
+        
         <Fragment>
             <h1>Post It Simulator!</h1>
-
-            <div className="input-group mt-4 mb-4">
-                <input ref={tituloRef} placeholder='Título' className="form-control" type="text"></input>
-            </div>   
-            <div className="input-group mt-4 mb-4">
-                <input ref={descripcionRef} placeholder='Descripción' className="form-control" type="text"></input>
-            </div>   
-            <div className="input-group mt-4 mb-4">
-                <input type="checkbox" className="form-check-input me-2" id="importancia"></input><label>Importancia</label>
-            </div>       
-            <div className="input-group mt-4 mb-4">
-                <button onClick={agregarTarea} className="btn btn-primary">Agregar</button>
+            <div class="row">
+                <div class="col"><input ref={tituloRef} placeholder='Título' className="form-control" type="text"></input></div>
+                <div class="col"><input ref={descripcionRef} placeholder='Descripción' className="form-control" type="text"></input></div>
+                <div class="col"><input ref={importanciaRef} type="checkbox" className="form-check-input me-2" id ="importante" ></input><label>importancia</label></div>
+                <div class="col"><button onClick={agregarTarea} className="btn btn-primary">Agregar</button></div>
             </div>
 
-            {todos.map((todo) => (
-                <TodoItem todo={todo} key={todo.id} ></TodoItem>))}
-        
+            <ul>
+                {todos.map((todo) => (
+                    <li>
+                    <div className={`${todo.importancia ? "importante" : ""}`}> 
+                        <h4 clasename="x"><button onClick={() => eliminapostit(todo.id)} className="btn-close">X</button></h4>
+                        <h3>{todo.titulo}</h3>
+                        <p>{todo.descripcion}</p>
+                        <p>{todo.importancia}</p>
+                    </div>
+                </li>
+                ))}
+            </ul>
         </Fragment>
 
     );
